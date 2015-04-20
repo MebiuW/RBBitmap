@@ -1,4 +1,4 @@
-package mebiuw.rbb.dundation.rowkey;
+package mebiuw.rbb.fundation.rowkey;
 
 import mebiuw.rbb.fundation.sql.Condition;
 import mebiuw.rbb.fundation.sql.IConditionable;

@@ -1,8 +1,8 @@
-package mebiuw.rbb.dundation.rowkey.simplerowkey;
+package mebiuw.rbb.fundation.rowkey.simplerowkey;
 
 import java.io.IOException;
 
-import mebiuw.rbb.dundation.rowkey.IDataItemable;
+import mebiuw.rbb.fundation.rowkey.IDataItemable;
 
 public class TestRowkey {
 

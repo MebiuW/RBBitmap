@@ -1,9 +1,9 @@
-package mebiuw.rbb.dundation.rowkey.simplerowkey;
+package mebiuw.rbb.fundation.rowkey.simplerowkey;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import mebiuw.rbb.dundation.rowkey.IDataItemable;
+import mebiuw.rbb.fundation.rowkey.IDataItemable;
 import mebiuw.rbb.fundation.sql.Condition;
 import mebiuw.rbb.fundation.sql.Condition.ConditionItem;
 import mebiuw.rbb.fundation.sql.ConditionStates;

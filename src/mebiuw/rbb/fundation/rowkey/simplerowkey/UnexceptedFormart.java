@@ -1,4 +1,4 @@
-package mebiuw.rbb.dundation.rowkey.simplerowkey;
+package mebiuw.rbb.fundation.rowkey.simplerowkey;
 
 public class UnexceptedFormart extends Exception {
 

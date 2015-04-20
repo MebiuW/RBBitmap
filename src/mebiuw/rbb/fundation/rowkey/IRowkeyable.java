@@ -1,4 +1,4 @@
-package mebiuw.rbb.dundation.rowkey;
+package mebiuw.rbb.fundation.rowkey;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

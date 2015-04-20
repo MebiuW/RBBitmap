@@ -1,5 +1,6 @@
 package mebiuw.rbb.fundation.protocol.chord;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 				this.processFunctionMessage((ChordMessage)chordMsg.getNextMessage());
 			}
 			else {
-				this.sendToDestination(msg);
+				this.sendToDestination((ChordMessage) msg);
 			}
 		}
 		else{
@@ -40,11 +41,15 @@ public class ChordProtocol implements IProtocol,IRouter{
 		
 	}
 	/**
-	 * 送去Chord的其他节点之上
+	 * 送去Chord的其他节点之上 这里需要实现路由算法
 	 * @param msg
 	 */
-	private void sendToDestination(IMessage msg) {
-		// TODO Auto-generated method stub
+	private void sendToDestination(ChordMessage msg) {
+		long destChord=msg.getChordId();
+		//获得ID
+		AddressItem item=this.toNextHop(destChord);
+		//
+		
 		
 	}
 	/**
@@ -53,10 +58,30 @@ public class ChordProtocol implements IProtocol,IRouter{
 	 */
 
 	private void processFunctionMessage(ChordMessage nextMessage) {
+		if(nextMessage.getMessageType().equals("INSERT")){
+			this.processInsertFunction(nextMessage.getMessageEntry());
+		}
+		else if(nextMessage.getMessageType().equals("POINT")){
+			
+		}this.processPointFunction(nextMessage.getMessageEntry());
+		
+	}
+	/**
+	 * 处理插入的代码
+	 * @param messageEntry
+	 */
+	private void processPointFunction(String messageEntry) {
 		// TODO Auto-generated method stub
 		
 	}
-
+	/**
+	 * 处理插入的代码
+	 * @param messageEntry
+	 */
+	private void processInsertFunction(String messageEntry) {
+		// TODO Auto-generated method stub
+		
+	}
 	@Override
 	public void callbackSupervisor(IMessage msg) {
 		// TODO Auto-generated method stub
@@ -71,14 +96,23 @@ public class ChordProtocol implements IProtocol,IRouter{
 
 	@Override
 	public void addAddressItem(AddressItem item) {
-		// TODO Auto-generated method stub
+		/**
+		 * 最后一定要排序
+		 */
+		Collections.sort(this.chordIDofRouters);
 		
 	}
-
+/**
+ * 根据吓一跳的chord id得到应该路由的位置
+ */
 	@Override
 	public AddressItem toNextHop(long chordid) {
-		// TODO Auto-generated method stub
-		return null;
+		int nextHop=0;
+		while(nextHop<this.chordIDofRouters.size() && this.chordIDofRouters.get(nextHop)<chordid){
+			nextHop++;
+		}
+		nextHop%=this.chordIDofRouters.size();
+		return this.routerList.get(nextHop);
 	}
 
 	@Override
