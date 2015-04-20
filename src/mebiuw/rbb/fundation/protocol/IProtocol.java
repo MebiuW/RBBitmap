@@ -11,6 +11,10 @@ public interface IProtocol {
 	 * @param msg
 	 */
 	public void callbackSupervisor(IMessage msg);
-	
+	/**
+	 * 获得当前节点的Ip地址
+	 * @return
+	 */
+	public String getIPAddress();
 
 }

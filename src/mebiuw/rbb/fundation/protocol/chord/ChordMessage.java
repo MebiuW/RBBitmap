@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mebiuw.rbb.fundation.protocol.IMessage;
+import mebiuw.rbb.fundation.protocol.IMultiMessage;
 /**
  * #和%符号都是保留符号
  * @author 72770_000
@@ -11,7 +12,7 @@ import mebiuw.rbb.fundation.protocol.IMessage;
  */
 public class ChordMessage implements IMessage,IMultiMessage {
 	private String entry,source,type,id,message;
-	private long createdTime,endTime,processTime;
+	private long createdTime,endTime,processTime,chordid;
 	int hops;
 	
 /**
@@ -33,6 +34,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
 		this.endTime=Long.parseLong(itemList.get(5));
 		this.type=itemList.get(6);
 		this.entry=itemList.get(7).replaceAll("#", "%");
+		this.createdTime=Long.parseLong(itemList.get(8));
 		
 		
 	}
@@ -41,7 +43,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
 	 * @param entry 消息正文
 	 * @param source 创建者ip
 	 */
-	public ChordMessage(String entry, String source,String type,String id) {
+	public ChordMessage(String entry, String source,String type,String id,long chordid) {
 		super();
 		this.entry = entry.replaceAll("#", "%");
 		this.source = source;
@@ -51,13 +53,14 @@ public class ChordMessage implements IMessage,IMultiMessage {
 		this.hops=1;
 		this.type=type;
 		this.id=id;
+		this.chordid=chordid;
 		this.refreshMessage();
 	}
 	/**
 	 * 更新自己当前消息的传输所需奥的格式
 	 */
 	private void refreshMessage() {
-		  this.message=this.source+"#"+this.id+"#"+this.hops+"#"+this.processTime+"#"+this.createdTime+"#"+this.endTime+"#"+this.type+"#"+this.entry;
+		  this.message=this.source+"#"+this.id+"#"+this.hops+"#"+this.processTime+"#"+this.createdTime+"#"+this.endTime+"#"+this.type+"#"+this.entry+"#"+this.chordid;
 		
 	}
 
@@ -71,7 +74,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
 	 */
 
 	public ChordMessage(String entry, String source, long createdTime,
-			long processTime, int hops,String type,String id) {
+			long processTime, int hops,String type,String id,long chordid) {
 		super();
 		this.entry = entry.replaceAll("#", "%");
 		this.source = source;
@@ -81,6 +84,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
 		this.endTime=System.currentTimeMillis();
 		this.type=type;
 		this.id=id;
+		this.chordid=chordid;
 		this.refreshMessage();
 	}
 
@@ -163,6 +167,15 @@ public class ChordMessage implements IMessage,IMultiMessage {
 		if(this.getNextMessage()!=null)
 			return true;
 		else return false;
+	}
+	
+	
+	/**
+	 * 返回该有的Chord Id
+	 * @return
+	 */
+	public long getChordId(){
+		return this.chordid;
 	}
 
 }
