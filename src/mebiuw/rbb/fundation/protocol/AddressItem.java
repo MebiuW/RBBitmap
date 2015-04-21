@@ -54,6 +54,7 @@ public class AddressItem {
 		this.ports = new ArrayList<Integer>();
 		this.ports = ports;
 		this.chordid = chordid;
+		
 	}
 
 	/**
