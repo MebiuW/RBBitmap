@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.mebiuw.btree.BplusTree;
+
 import mebiuw.rbb.fundation.protocol.AddressItem;
 import mebiuw.rbb.fundation.protocol.IMessage;
 import mebiuw.rbb.fundation.protocol.IProtocol;
@@ -20,8 +22,15 @@ public class ChordProtocol implements IProtocol,IRouter{
 	 */
 	private List<Long> chordIDofRouters;
 	private String myip;
+	/**
+	 * B-Tree
+	 */
+	private BplusTree btree;
 	
 
+	/**
+	 * 启动新的线程去执行相关操作
+	 */
 	@Override
 	public void processMessage(IMessage msg) {
 		ChordMessage chordMsg = (ChordMessage)msg;
@@ -29,14 +38,24 @@ public class ChordProtocol implements IProtocol,IRouter{
 			AddressItem nextHop=this.toNextHop(chordMsg.getChordId());
 			if(nextHop==this.myAddressItem)
 			{
-				this.processFunctionMessage((ChordMessage)chordMsg.getNextMessage());
+				/**
+				 * 启动一个新线程去执行
+				 */
+				ThreadWorker th=new ThreadWorker(null,chordMsg,this);
+				Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
+				thread.start();
 			}
 			else {
 				this.sendToDestination((ChordMessage) msg);
 			}
 		}
 		else{
-			this.processFunctionMessage((ChordMessage)msg);
+			/**
+			 * 启动一个新线程去执行
+			 */
+			ThreadWorker th=new ThreadWorker(null,chordMsg,this);
+			Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
+			thread.start();
 		}
 		
 	}
@@ -52,36 +71,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		
 		
 	}
-	/**
-	 * 处理功能性消息
-	 * @param nextMessage，接触封装的消息
-	 */
 
-	private void processFunctionMessage(ChordMessage nextMessage) {
-		if(nextMessage.getMessageType().equals("INSERT")){
-			this.processInsertFunction(nextMessage.getMessageEntry());
-		}
-		else if(nextMessage.getMessageType().equals("POINT")){
-			
-		}this.processPointFunction(nextMessage.getMessageEntry());
-		
-	}
-	/**
-	 * 处理插入的代码
-	 * @param messageEntry
-	 */
-	private void processPointFunction(String messageEntry) {
-		// TODO Auto-generated method stub
-		
-	}
-	/**
-	 * 处理插入的代码
-	 * @param messageEntry
-	 */
-	private void processInsertFunction(String messageEntry) {
-		// TODO Auto-generated method stub
-		
-	}
 	@Override
 	public void callbackSupervisor(IMessage msg) {
 		// TODO Auto-generated method stub
@@ -121,6 +111,10 @@ public class ChordProtocol implements IProtocol,IRouter{
 		
 	}
 	
+	
+	public void initManagement(){
+		this.btree=new BplusTree(4);
+	}
 
 
 }
