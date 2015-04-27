@@ -31,7 +31,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 	private String position,bposition,rposition;
 	private int networkSize,routeTableSize,netid,blevel;
 	private long df;
-	private AddressItem current,supervisor;
+	private AddressItem myAddressItem,supervisor;
 	private List<AddressItem> routeTable;
 	
 	public ChordProtocol(String configurationPosition) throws Exception{
@@ -65,6 +65,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 			tmpPorts=params.get(index++);
 			this.routeTable.add(new AddressItem(tmpIp,tmpPorts,netid));
 		}
+		this.myAddressItem=this.routeTable.get(this.netid);
 		this.supervisor=new AddressItem(params.get(index++),params.get(index++),-1);
 		this.bposition=params.get(index++);
 		/**
@@ -89,6 +90,10 @@ public class ChordProtocol implements IProtocol,IRouter{
 			SimpleListRowkey slr=new SimpleListRowkey(this.rposition+rowid+".txt");
 			this.btree.insertOrUpdate(rowid,slr);
 		}
+		/**
+		 * 初始化Netty模块
+		 */
+		
 		
 	}
 
