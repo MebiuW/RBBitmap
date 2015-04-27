@@ -1,6 +1,9 @@
 package mebiuw.rbb.fundation.network.netty;
 
 import java.net.InetAddress;
+
+import mebiuw.rbb.fundation.protocol.IProtocol;
+import mebiuw.rbb.fundation.protocol.chord.ChordMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -8,9 +11,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
-	Subscriberable suber;
+	IProtocol suber;
 	
-	public NettyServerHandler(Subscriberable suber) {
+	public NettyServerHandler(IProtocol suber) {
 		this.suber=suber;
 	}
 
@@ -18,7 +21,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
 	protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
 		// 收到消息直接打印输出
 		System.out.println(System.currentTimeMillis()+"  "+ctx.channel().remoteAddress() + " Say : " + msg);
-		this.suber.update(msg);
+		this.suber.processMessage(new ChordMessage(msg));
 		
 		// 返回客户端消息 - 我已经接收到了你的消息
 		//ctx.writeAndFlush("Received your message !\n");

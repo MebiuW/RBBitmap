@@ -1,6 +1,7 @@
 package mebiuw.rbb.fundation.network.netty;
 
 
+import mebiuw.rbb.fundation.protocol.IProtocol;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -10,9 +11,9 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {
-	Subscriberable suber;
+	IProtocol suber;
 	
-	public NettyServerInitializer(Subscriberable suber){
+	public NettyServerInitializer(IProtocol suber){
 		this.suber=suber;
 	}
 
