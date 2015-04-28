@@ -131,7 +131,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
 	@Override
 	public String getMessageEntry() {
 
-		return this.entry;
+		return this.entry.replace("%", "#");
 	}
 
 	@Override

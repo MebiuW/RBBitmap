@@ -32,8 +32,9 @@ public class ProtocolServer {
 	public void startListening() {
 		// 开始坚挺
 		for (int i = 0; i < this.portSize; i++) {
-			this.serverList[i] = new NettyServer(this.serverState.getPorts()
-					.get(i), hoster);
+			Thread thread=new Thread(this.serverList[i],"server-port:"+this.serverState.getPorts()
+					.get(i));
+			thread.start();
 		}
 	}
 

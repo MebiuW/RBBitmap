@@ -14,10 +14,31 @@ public class SimpleListRowkey implements IRowkeyable {
 	private FileStorage file;
 	private List<IDataItemable> datas;
 	private int numberOfParameters;
-
+	private String filePosition;
+	
+	
+	/**
+	 * 全新创建的一个
+	 * @param dimension
+	 * @param filePosition
+	 */
+	public SimpleListRowkey(int dimension,String filePosition){
+		this.datas=new ArrayList<IDataItemable>();
+		this.filePosition=filePosition;
+		this.numberOfParameters=dimension;
+		this.file = new FileStorage(filePosition);
+		
+		
+	}
+	/**
+	 * 从文件地址加载加载方式加载的
+	 * @param filePosition
+	 * @throws UnexceptedFormart
+	 */
 	public SimpleListRowkey(String filePosition) throws UnexceptedFormart {
 		this.file = new FileStorage(filePosition);
 		this.datas = new ArrayList<IDataItemable>();
+		this.filePosition=filePosition;
 		int numberOfLines;
 		// 装载文件
 		try {

@@ -2,6 +2,7 @@ package mebiuw.rbb.fundation.protocol.chord;
 
 import mebiuw.rbb.fundation.protocol.IProtocol;
 import mebiuw.rbb.fundation.rowkey.IRowkeyable;
+import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleListRowkey;
 
 import com.mebiuw.btree.IBtree;
 
@@ -12,13 +13,17 @@ public class ThreadWorker implements Runnable {
 	private IBtree btree;
 	private ChordMessage nextMessage;
 	private IProtocol callbackProtocol;
+	private String rowkeyPosition;
+	private int dimension;
 
 	public ThreadWorker(IBtree btree, ChordMessage nextMessage,
-			IProtocol callbackProtocol) {
+			IProtocol callbackProtocol,String rowkeyPosition,int dimension) {
 		super();
 		this.btree = btree;
 		this.nextMessage = nextMessage;
 		this.callbackProtocol = callbackProtocol;
+		this.rowkeyPosition=rowkeyPosition;
+		this.dimension=dimension;
 	}
 
 	@Override
@@ -72,8 +77,7 @@ public class ThreadWorker implements Runnable {
 		long regionId = Long.parseLong(items[0]);
 		IRowkeyable rowkey = (IRowkeyable) this.btree.get(regionId);
 		if (rowkey == null) {
-			// TODO
-			// rowkey=new SimpleLiostRowkey();
+			rowkey=new SimpleListRowkey(this.dimension,this.rowkeyPosition);
 			this.btree.insertOrUpdate(regionId, rowkey);
 		}
 		rowkey.insertOrUpdate(null);

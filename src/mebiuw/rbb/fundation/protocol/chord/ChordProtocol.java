@@ -11,6 +11,7 @@ import mebiuw.rbb.fundation.protocol.AddressItem;
 import mebiuw.rbb.fundation.protocol.IMessage;
 import mebiuw.rbb.fundation.protocol.IProtocol;
 import mebiuw.rbb.fundation.protocol.IRouter;
+import mebiuw.rbb.fundation.protocol.ProtocolServer;
 import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleListRowkey;
 import mebiuw.rbb.fundation.storage.FileStorage;
 
@@ -30,7 +31,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 	private BplusTree btree;
 	private String position,bposition,rposition;
 	private int networkSize,routeTableSize,netid,blevel;
-	private long df;
+	private int dimension;
 	private AddressItem myAddressItem,supervisor;
 	private List<AddressItem> routeTable;
 	
@@ -77,6 +78,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		 * b+的几个叶
 		 * rowkey位置
 		 * 有几个rowkey
+		 * 具体数据的维度
 		 * 有的序列
 		 */
 		int bindex=0;
@@ -84,6 +86,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		this.rposition=bparams.get(bindex++);
 		this.btree=new BplusTree(this.blevel);
 		int rowkeys=Integer.parseInt(bparams.get(bindex++));
+		this.dimension=Integer.parseInt(bparams.get(bindex++));
 		int rowid;
 		for(int i=0;i<rowkeys;i++){
 			rowid=Integer.parseInt(bparams.get(bindex++));
@@ -91,8 +94,10 @@ public class ChordProtocol implements IProtocol,IRouter{
 			this.btree.insertOrUpdate(rowid,slr);
 		}
 		/**
-		 * 初始化Netty模块
+		 * 初始化Netty模块 并开始监听
 		 */
+		ProtocolServer ps=new ProtocolServer(this.myAddressItem,this);
+		ps.startListening();
 		
 		
 	}
@@ -110,7 +115,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 				/**
 				 * 启动一个新线程去执行
 				 */
-				ThreadWorker th=new ThreadWorker(null,chordMsg,this);
+				ThreadWorker th=new ThreadWorker(null,chordMsg,this,this.rposition,this.dimension);
 				Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
 				thread.start();
 			}
@@ -122,7 +127,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 			/**
 			 * 启动一个新线程去执行
 			 */
-			ThreadWorker th=new ThreadWorker(null,chordMsg,this);
+			ThreadWorker th=new ThreadWorker(null,chordMsg,this,this.rposition,this.dimension);
 			Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
 			thread.start();
 		}
