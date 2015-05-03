@@ -20,7 +20,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
 		// 收到消息直接打印输出
-		System.out.println(System.currentTimeMillis()+"  "+ctx.channel().remoteAddress() + " Say : " + msg);
+		//System.out.println(System.currentTimeMillis()+"  "+ctx.channel().remoteAddress() + " Say : " + msg);
 		this.suber.processMessage(new ChordMessage(msg));
 		
 		// 返回客户端消息 - 我已经接收到了你的消息

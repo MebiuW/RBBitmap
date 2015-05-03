@@ -11,6 +11,20 @@ import mebiuw.rbb.fundation.protocol.IMultiMessage;
  *
  */
 public class ChordMessage implements IMessage,IMultiMessage {
+	public long getCreatedTime() {
+		return createdTime;
+	}
+	public void setCreatedTime(long createdTime) {
+		this.createdTime = createdTime;
+	}
+	public void setProcessTime(long processTime) {
+		this.processTime = processTime;
+	}
+	public void setHops(int hops) {
+		this.hops = hops;
+	}
+
+
 	private String entry,source,type,id,message;
 	private long createdTime,endTime,processTime,chordid;
 	int hops;
@@ -34,7 +48,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
 		this.endTime=Long.parseLong(itemList.get(5));
 		this.type=itemList.get(6);
 		this.entry=itemList.get(7).replaceAll("#", "%");
-		this.createdTime=Long.parseLong(itemList.get(8));
+		this.chordid=Long.parseLong(itemList.get(8));
 		
 		
 	}

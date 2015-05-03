@@ -2,6 +2,7 @@ package mebiuw.rbb.fundation.network.netty;
 
 
 
+import mebiuw.rbb.exp.Logger;
 import mebiuw.rbb.fundation.protocol.IProtocol;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -19,6 +20,7 @@ public class NettyServer implements Runnable {
 		super();
 		this.portNumber = portNumber;
 		this.suber = suber;
+		
 	}
 
 
@@ -26,6 +28,7 @@ public class NettyServer implements Runnable {
 	@Override
 	public void run() {
 		try {
+			Logger.Log("本机监听端口"+portNumber);
 			EventLoopGroup bossGroup = new NioEventLoopGroup();
 			EventLoopGroup workerGroup = new NioEventLoopGroup();
 			try {
@@ -47,6 +50,7 @@ public class NettyServer implements Runnable {
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
+			Logger.Log("本机监听端口"+portNumber+"异常");
 			e.printStackTrace();
 		}
 		

@@ -1,7 +1,10 @@
 package mebiuw.rbb.fundation.protocol.chord;
 
+import mebiuw.rbb.exp.Logger;
 import mebiuw.rbb.fundation.protocol.IProtocol;
+import mebiuw.rbb.fundation.rowkey.IDataItemable;
 import mebiuw.rbb.fundation.rowkey.IRowkeyable;
+import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleDataItem;
 import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleListRowkey;
 
 import com.mebiuw.btree.IBtree;
@@ -19,6 +22,7 @@ public class ThreadWorker implements Runnable {
 	public ThreadWorker(IBtree btree, ChordMessage nextMessage,
 			IProtocol callbackProtocol,String rowkeyPosition,int dimension) {
 		super();
+		Logger.Log("线程处理Function消息：Message ID :"+nextMessage.getMessageId());
 		this.btree = btree;
 		this.nextMessage = nextMessage;
 		this.callbackProtocol = callbackProtocol;
@@ -40,12 +44,13 @@ public class ThreadWorker implements Runnable {
 
 	private void processFunctionMessage() {
 		if (nextMessage.getMessageType().equals("INSERT")) {
-			this.processInsertFunction(nextMessage.getMessageEntry());
+			this.processInsertFunction(nextMessage);
+			Logger.Count();
 
 		} else if (nextMessage.getMessageType().equals("POINT")) {
 
 		}
-		this.processPointFunction(nextMessage.getMessageEntry());
+		
 
 	}
 
@@ -72,16 +77,19 @@ public class ThreadWorker implements Runnable {
 	 * 
 	 * @param messageEntry
 	 */
-	private void processInsertFunction(String messageEntry) {
-		String[] items = messageEntry.split("#");
+	private void processInsertFunction(ChordMessage msg) {
+		Logger.Log("线程准备处理InsertOrUpdate：Message ID :"+nextMessage.getMessageId());
+		String[] items = msg.getMessageEntry().split(",");
 		long regionId = Long.parseLong(items[0]);
 		IRowkeyable rowkey = (IRowkeyable) this.btree.get(regionId);
 		if (rowkey == null) {
-			rowkey=new SimpleListRowkey(this.dimension,this.rowkeyPosition);
+			rowkey=new SimpleListRowkey(this.dimension,this.rowkeyPosition+"\\"+regionId+".txt");
 			this.btree.insertOrUpdate(regionId, rowkey);
 		}
-		rowkey.insertOrUpdate(null);
+		IDataItemable data=new SimpleDataItem(msg.getMessageEntry());
+		rowkey.insertOrUpdate(data);
 		this.callbackProtocol.callbackSupervisor(null);
+		Logger.Log("线程处理InsertOrUpdate处理成功消息：Message ID :"+nextMessage.getMessageId());
 	}
 
 }

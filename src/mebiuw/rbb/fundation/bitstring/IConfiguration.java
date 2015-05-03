@@ -1,4 +1,7 @@
 package mebiuw.rbb.fundation.bitstring;
+
+import mebiuw.rbb.fundation.rowkey.IDataItemable;
+
 /**
  * 如果需要配置一个参数，那么所需要实现的东西
  * @author MebiuW
@@ -12,7 +15,7 @@ public interface IConfiguration {
 	 * @param value 值
 	 * @return 当前value在这个配置下的分区排序
 	 */
-	public long getAttributeIndex(int attributeIndex,double value);
+	public int getAttributeIndex(int attributeIndex,double value);
 	/**
 	 * 返回当前这个配置下有多少个属性数目
 	 * @return 属性数目
@@ -24,5 +27,18 @@ public interface IConfiguration {
 	 * @return 占用大小
 	 */
 	public int getBitLengthOfAttribute(int index);
+	/**
+	 * 根据当前时间获得一个指定属性上的随机值
+	 * @param index
+	 * @return
+	 */
+	public double getRandomValue(int index);
+	/**
+	 * 获得一个随机的值
+	 * @return
+	 */
+	public IDataItemable getRandomDataItem();
+	
+	
 
 }

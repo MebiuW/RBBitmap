@@ -18,6 +18,7 @@ public abstract interface IDataItemable extends IConditionable {
 
 	
 	public double getFirstKey();
+	public long getRegionId();
 	
 	/**
 	 * 如果需要保存的话，通过调用这个方法获得需要保存的内容，限制为一行

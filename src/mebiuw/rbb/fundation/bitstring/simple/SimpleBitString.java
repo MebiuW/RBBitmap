@@ -11,7 +11,7 @@ import mebiuw.rbb.fundation.bitstring.IConfiguration;
  *
  */
 
-public abstract class SimpleBitString implements IBitString {
+public  class SimpleBitString implements IBitString {
 	/**
 	 * 需要输入原始值来
 	 * @param metaData
@@ -22,7 +22,17 @@ public abstract class SimpleBitString implements IBitString {
 	 * @param config 配置文件
 	 * @param metaData 具体的条件
 	 */
-	public SimpleBitString(IConfiguration config,List<Double> metaData){
+	private IConfiguration config;
+	public SimpleBitString(IConfiguration config){
+		this.config=config;
+	}
+	/**
+	 * 计算Region ID
+	 * @param metaData
+	 * @return
+	 */
+	
+	public long computeRegionId (List<Double> metaData){
 		//计算Region Id
 		long region=0;
 		int i;
@@ -35,6 +45,29 @@ public abstract class SimpleBitString implements IBitString {
 			region+=config.getAttributeIndex(i, metaData.get(i));
 		}
 		this.regionId=region;
+		return region;
+	}
+	
+	/**
+	 * 计算Region ID
+	 * @param metaData
+	 * @return
+	 */
+	
+	public long computeRegionId (double[] metaData){
+		//计算Region Id
+		long region=0;
+		int i;
+		for( i=0;i+1<metaData.length;i++){
+			region+=config.getAttributeIndex(i, metaData[i]);
+			region=region<<config.getBitLengthOfAttribute(i);
+		}
+		//最后一个不需要位移
+		if(i<metaData.length){
+			region+=config.getAttributeIndex(i, metaData[i]);
+		}
+		this.regionId=region;
+		return region;
 	}
 	
 	/**

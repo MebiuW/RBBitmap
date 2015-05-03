@@ -17,24 +17,26 @@ public class SimpleDataItem implements IDataItemable {
 	private String storeRecords;
 
 	
-	public SimpleDataItem(double[] data){
+	public SimpleDataItem(double[] data,long regionid){
 		this.data=data;
+		this.regionid=regionid;
 		if(data.length==0)
 			return ;
-		StringBuilder sb=new StringBuilder(data[0]+"");
-		for(int i=1;i<data.length;i++)
+		StringBuilder sb=new StringBuilder(regionid+"");
+		for(int i=0;i<data.length;i++)
 			sb.append(","+data[i]);
 		this.storeRecords=sb.toString();
 	}
 	
 	/**
-	 * 从文件中读取出来的一行"A1,A2,A3...."
+	 * 从文件中读取出来的一行"regionid,A1,A2,A3...."
 	 * @param inputLine
 	 */
 	public SimpleDataItem(String inputLine){
 	     String[] array = inputLine.split(",");
 	     data = new double[array.length];
-	     for(int i=0;i<array.length;i++){
+	     this.regionid=Long.parseLong(array[0]);
+	     for(int i=1;i<array.length;i++){
 	    	 data[i]=(Double.parseDouble(array[i]));
 	     }
 	     this.storeRecords=inputLine;
@@ -77,6 +79,12 @@ public class SimpleDataItem implements IDataItemable {
 	@Override
 	public double[] getData() {
 		return this.data;
+	}
+
+	@Override
+	public long getRegionId() {
+		// TODO Auto-generated method stub
+		return this.regionid;
 	}
 
 

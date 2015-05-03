@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
+
+import mebiuw.rbb.exp.Logger;
 public class NettyClient implements Runnable {
 	
 	public  String host;
-	public  int port = 7878;
+	public  int port ;
 	private Queue<String> quene;
 	/**
 	 * 初始化一个客户端 发送请求的，一旦受到后，这个请求就开始监听了
@@ -28,6 +30,7 @@ public class NettyClient implements Runnable {
 	 * @param port 端口
 	 */
 	public NettyClient(String ip,int port){
+		Logger.Log("准备打开通往"+ip+":"+port+"的Netty通道 即将休眠30S后打开");
 		this.quene=new LinkedList<String>();
 		this.host=ip;
 		this.port=port;
@@ -43,6 +46,7 @@ public class NettyClient implements Runnable {
 	 */
 	public  void run (String[] args) throws InterruptedException, IOException {
 		EventLoopGroup group = new NioEventLoopGroup();
+		Thread.sleep(10000);
 		try {
 			Bootstrap b = new Bootstrap();
 			b.group(group)
@@ -51,25 +55,36 @@ public class NettyClient implements Runnable {
 
 			// 连接服务端
 			Channel ch = b.connect(host, port).sync().channel();
-			
+			Logger.Log("已经打开"+host+":"+port+"的Netty通道");
 			// 控制台输入
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			int i=0;
+			
 			for (;;) {
 				
 				/*
 				 * 向服务端发送在控制台输入的文本 并用"\r\n"结尾
 				 * 之所以用\r\n结尾 是因为我们在handler中添加了 DelimiterBasedFrameDecoder 帧解码。
 				 * */
+				String tmp=null;
+				
 				while(this.quene.isEmpty())
 				{
 				
-					Thread.sleep(1000);
+					Thread.yield();
 					//System.out.println("No datas  "+this.quene.hashCode());
 				}
-				ch.writeAndFlush(this.quene.poll()+ "\r\n");
+				synchronized(this){
+				tmp=this.quene.poll();
+				}
+				ch.writeAndFlush(tmp+ "\r\n");
 			}
-		} finally {
+		} 
+		catch(Exception e){
+			Logger.Log(""+host+":"+port+"的Netty通道异常"+e+"//");
+			e.printStackTrace();
+		}
+		finally {
 			// The connection is closed automatically on shutdown.
 			group.shutdownGracefully();
 		}
@@ -81,7 +96,9 @@ public class NettyClient implements Runnable {
  * @param msg
  */
 	public void sendMsg(String msg){
+		synchronized(this){
 		this.quene.add(msg);
+		}
 	}
 
 	@Override

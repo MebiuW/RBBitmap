@@ -6,7 +6,7 @@ package mebiuw.rbb.fundation.protocol;
  */
 public interface IRouter {
 	public void addAddressItem(AddressItem item);
-	public AddressItem toNextHop(long chordid);
+	public int toNextHop(long chordid);
 	public void removeAddressItem(String ip);
 	
 
