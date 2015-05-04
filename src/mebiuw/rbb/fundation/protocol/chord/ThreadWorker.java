@@ -43,6 +43,12 @@ public class ThreadWorker implements Runnable {
 	 */
 
 	private void processFunctionMessage() {
+		try {
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (nextMessage.getMessageType().equals("INSERT")) {
 			this.processInsertFunction(nextMessage);
 			Logger.Count();
@@ -78,18 +84,37 @@ public class ThreadWorker implements Runnable {
 	 * @param messageEntry
 	 */
 	private void processInsertFunction(ChordMessage msg) {
+		try{
 		Logger.Log("线程准备处理InsertOrUpdate：Message ID :"+nextMessage.getMessageId());
 		String[] items = msg.getMessageEntry().split(",");
 		long regionId = Long.parseLong(items[0]);
-		IRowkeyable rowkey = (IRowkeyable) this.btree.get(regionId);
+		
+		IRowkeyable rowkey =null;
+		synchronized(this){
+		rowkey=(IRowkeyable) this.btree.get(regionId);
+		}
 		if (rowkey == null) {
 			rowkey=new SimpleListRowkey(this.dimension,this.rowkeyPosition+"\\"+regionId+".txt");
+			synchronized(this){
 			this.btree.insertOrUpdate(regionId, rowkey);
+			}
 		}
 		IDataItemable data=new SimpleDataItem(msg.getMessageEntry());
 		rowkey.insertOrUpdate(data);
-		this.callbackProtocol.callbackSupervisor(null);
 		Logger.Log("线程处理InsertOrUpdate处理成功消息：Message ID :"+nextMessage.getMessageId());
-	}
+		//增加一个查询
+		
+		
+		
+		}
+		finally{
+			this.callbackProtocol.callbackSupervisor(msg);
+		}
+		
+		}
+		
+		
+		
+	
 
 }

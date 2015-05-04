@@ -34,6 +34,7 @@ public class ChordMessage implements IMessage,IMultiMessage {
  * @param msg
  */
 	public ChordMessage(String msg){
+		try{
 		this.message=msg;
 		List<String> itemList = this.getMessageItems();
 		/**
@@ -49,7 +50,11 @@ public class ChordMessage implements IMessage,IMultiMessage {
 		this.type=itemList.get(6);
 		this.entry=itemList.get(7).replaceAll("#", "%");
 		this.chordid=Long.parseLong(itemList.get(8));
-		
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.out.println("   "   +msg);
+		}
 		
 	}
 	/**
@@ -169,7 +174,10 @@ public class ChordMessage implements IMessage,IMultiMessage {
 	@Override
 	public IMessage getNextMessage() {
 		try{
-			return new ChordMessage(this.entry.replaceAll("%", "#"));
+			//保证消息一致
+			ChordMessage msg = new ChordMessage(this.entry.replaceAll("%", "#"));
+			msg.id=this.id;
+			return msg;
 		}
 		catch(Exception e){
 			e.printStackTrace();

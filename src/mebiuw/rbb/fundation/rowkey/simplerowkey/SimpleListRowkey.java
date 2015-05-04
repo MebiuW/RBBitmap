@@ -69,6 +69,7 @@ public class SimpleListRowkey implements IRowkeyable {
 	public boolean insertOrUpdate(long id, IDataItemable value) {
 		// TODO Auto-generated method stub
 		this.datas.add(value);
+		
 		if(this.numberOfParameters<value.getData().length)
 			this.numberOfParameters=value.getData().length;
 		return false;
@@ -78,6 +79,17 @@ public class SimpleListRowkey implements IRowkeyable {
 	public boolean insertOrUpdate(IDataItemable value) {
 		// TODO Auto-generated method stub
 		this.datas.add(value);
+		Iterator<IDataItemable> it = this.datas.iterator();
+		while(it.hasNext()){
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(value.equals(it.next()))
+				break;
+		}
 		if(this.numberOfParameters<value.getData().length)
 			this.numberOfParameters=value.getData().length;
 		return true;

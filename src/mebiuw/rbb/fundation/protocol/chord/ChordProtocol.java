@@ -26,6 +26,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 	 * 用于路由随机访问的
 	 */
 	private List<List<NettyClient>> nettyClientList;
+	private List<NettyClient> supervisorServer;
 	/**
 	 * 用来保存当前维护的chordid
 	 */
@@ -96,6 +97,12 @@ public class ChordProtocol implements IProtocol,IRouter{
 		}
 		
 		this.supervisor=new AddressItem(params.get(index++),params.get(index++),-1);
+		this.supervisorServer=new ArrayList<NettyClient>();
+		for(int i=0;i<this.supervisor.getPorts().size();i++){
+			NettyClient nc=new NettyClient(this.supervisor.getIp(),this.supervisor.getPorts().get(i));
+			this.supervisorServer.add(nc);
+			
+		}
 		this.bposition=params.get(index++);
 		Logger.Log("完成装载配置文件 装载B+树");
 		/**
@@ -179,9 +186,13 @@ public class ChordProtocol implements IProtocol,IRouter{
 		
 	}
 
+	// 返回通知消息
 	@Override
 	public void callbackSupervisor(IMessage msg) {
-		// TODO Auto-generated method stub
+		List<NettyClient> senders = this.supervisorServer;
+		int nextPort=msg.getMessageId().hashCode()%senders.size();
+		//只需要返回id就可以了
+		senders.get(nextPort).sendMsg(msg.getMessageId());
 		
 	}
 

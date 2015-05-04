@@ -1,8 +1,11 @@
 package com.mebiuw.btree;
 
 import java.util.Random;  
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BplusTree implements IBtree {  
+	 private  ReadWriteLock lock = new ReentrantReadWriteLock();  
       
     /** 根节点 */  
     protected Node root;  
@@ -39,7 +42,16 @@ public class BplusTree implements IBtree {
   
     @Override  
     public Object get(long key) {  
-        return root.get(key);  
+    	//加一个读写锁
+		
+    	try{
+    		this.lock.readLock().lock();
+    		Object result = root.get(key);  
+        return result;  
+    	}
+    	finally{
+    		this.lock.readLock().unlock();
+    	}
     }  
   
     @Override  
@@ -50,7 +62,15 @@ public class BplusTree implements IBtree {
   
     @Override  
     public void insertOrUpdate(long key, Object obj) {  
-        root.insertOrUpdate(key, obj, this);  
+    	//加一个读写锁
+    	
+    	try{
+    		this.lock.writeLock().lock();
+        root.insertOrUpdate(key, obj, this);
+    	}
+    	finally{
+    		this.lock.writeLock().unlock();
+    	}
   
     }  
       

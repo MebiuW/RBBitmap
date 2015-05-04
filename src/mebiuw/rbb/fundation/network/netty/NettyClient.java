@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import mebiuw.rbb.exp.Logger;
 public class NettyClient implements Runnable {
-	
+	 private  ReadWriteLock lock = new ReentrantReadWriteLock();  
 	public  String host;
 	public  int port ;
 	private Queue<String> quene;
@@ -46,7 +48,7 @@ public class NettyClient implements Runnable {
 	 */
 	public  void run (String[] args) throws InterruptedException, IOException {
 		EventLoopGroup group = new NioEventLoopGroup();
-		Thread.sleep(10000);
+		Thread.sleep(30000);
 		try {
 			Bootstrap b = new Bootstrap();
 			b.group(group)
@@ -74,9 +76,10 @@ public class NettyClient implements Runnable {
 					Thread.yield();
 					//System.out.println("No datas  "+this.quene.hashCode());
 				}
-				synchronized(this){
+				this.lock.readLock().lock();
 				tmp=this.quene.poll();
-				}
+				this.lock.readLock().unlock();
+				if(tmp!=null )
 				ch.writeAndFlush(tmp+ "\r\n");
 			}
 		} 
@@ -96,9 +99,10 @@ public class NettyClient implements Runnable {
  * @param msg
  */
 	public void sendMsg(String msg){
-		synchronized(this){
+		this.lock.writeLock().lock();
 		this.quene.add(msg);
-		}
+		this.lock.writeLock().unlock();
+		
 	}
 
 	@Override
