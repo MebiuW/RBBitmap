@@ -85,6 +85,7 @@ public class ThreadWorker implements Runnable {
 	 */
 	private void processInsertFunction(ChordMessage msg) {
 		try{
+		
 		Logger.Log("线程准备处理InsertOrUpdate：Message ID :"+nextMessage.getMessageId());
 		String[] items = msg.getMessageEntry().split(",");
 		long regionId = Long.parseLong(items[0]);

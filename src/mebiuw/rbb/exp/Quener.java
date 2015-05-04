@@ -26,13 +26,11 @@ public class Quener {
 		this.startTimeCounter.put(msgId, System.currentTimeMillis());
 		//Logger.Log("send"+System.currentTimeMillis());
 	}
-	public void sendBack(long msgId){
+	public synchronized void sendBack(long msgId){
 		//Logger.Log("back"+System.currentTimeMillis());
 		this.endTimeCounter.put(msgId, System.currentTimeMillis());
 		count++;
-		//lock.writeLock().lock();
 		empty++;
-	//	lock.writeLock().unlock();
 	}
 	public void computer(){
 		long time=0,count=0;
@@ -78,12 +76,12 @@ public class Quener {
 		}
 	}
 	public void mains() throws Exception{
-		FileStorage db=new FileStorage("G:\\Datas\\RBB\\BT\\db.txt");
+		FileStorage db=new FileStorage("/Users/MebiuW/Documents/TMP/RBB/db.txt");
 		List<String> all = db.readAllLines();
 		Queue<String> str=new LinkedList<String>();
 		Queue<Long> msgids=new LinkedList<Long>();
 		for(int i=0;i<20000;i++){
-			long chordid=Long.parseLong(all.get(i).substring(0,all.get(i).indexOf(",")))%3;
+			long chordid=Long.parseLong(all.get(i).substring(0,all.get(i).indexOf(",")))%2;
 			ChordMessage icm=new ChordMessage(all.get(i),"lc","INSERT",""+i,chordid);
 			ChordMessage cm=new ChordMessage(icm.getMessageText(),"lc","LOCATE",""+i,chordid);
 			str.add(cm.getMessageText());
@@ -91,43 +89,42 @@ public class Quener {
 			//System.out.println(cm.getMessageText());
 		}
 		List<NettyClient> netlist=new ArrayList<NettyClient>();
-		for(int i=0;i<15;i++){
-			netlist.add(new NettyClient("127.0.0.1",10001+i));
-	//		netlist.add(new NettyClient("192.168.31.160",10001+i));
+		for(int i=0;i<3;i++){
+		//	netlist.add(new NettyClient("127.0.0.1",10001+i));
+			netlist.add(new NettyClient("192.168.31.160",10001+i));
+			netlist.add(new NettyClient("192.168.31.161",10001+i));
 		}
 		Thread t0=null;
-		for(int i=0;i<netlist.size();i++){
-			Thread t=new Thread(netlist.get(i));
-			t.start();
-			t0=t;
-		}
+	
 		
 		System.out.println("Go");
 		Random ran=new Random(System.currentTimeMillis());
 
-		AddressItem item=new AddressItem("127.0.0.1","11001 11002 11003 11004 11005",-1);
+		AddressItem item=new AddressItem("127.0.0.1","20005 20006 20001 20002 20003 20004 20007",-1);
 		CountProtocolServer ps=new CountProtocolServer(item,this);
 		ps.startListening();
 		Thread.sleep(31000);
-		int step=1;
-		for(int i=0;i<step*netlist.size();i++){
+		int step=100;
+		for(int i=0;i<step*netlist.size()+10;i++){
 			this.newMsg(msgids.poll());
 			netlist.get(ran.nextInt(netlist.size())).sendMsg(str.poll());
 		}
 		Scanner it=new Scanner(System.in);
 		
-		while(count<5000){
-			if(empty<=step)
+		while(count<15000){
+			if(empty<0)
 				Thread.yield();
-			if(empty>=step){
+			if(empty>=0){
 			//	this.lock.writeLock().lock();
 				empty-=step;
 				//this.lock.writeLock().unlock();
-				
+				for(int i=0;i<step;i++){
 					this.newMsg(msgids.poll());
 					netlist.get(ran.nextInt(netlist.size())).sendMsg(str.poll());
+				}
 				
 			}
+			
 		}
 		//this.computers();
 		System.out.println("OO");

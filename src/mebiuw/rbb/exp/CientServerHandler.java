@@ -21,7 +21,15 @@ public class CientServerHandler extends SimpleChannelInboundHandler<String> {
 	protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
 		// 收到消息直接打印输出
 		//System.out.println(System.currentTimeMillis()+"  "+ctx.channel().remoteAddress() + " Say : " + msg);
-		this.suber.sendBack(Long.parseLong(msg));
+		Logger.Log(msg);
+		if (msg.charAt(0) != 'h') {
+			
+			String[] msgs = msg.split("~");
+			for (int i = 1; i < msgs.length; i++)
+				this.suber.sendBack(Long.parseLong(msgs[i]));
+			
+			
+		}
 		
 		// 返回客户端消息 - 我已经接收到了你的消息
 		//ctx.writeAndFlush("Received your message !\n");
