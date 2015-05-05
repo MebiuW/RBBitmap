@@ -26,7 +26,7 @@ public class DataCreater {
 			}
 			System.out.println("完成一个");
 		}
-		FileStorage db=new FileStorage("G:\\Datas\\RBB\\BT\\db.txt");
+		FileStorage db=new FileStorage("G:\\Datas\\RBB\\BT\\db3.txt");
 		StringBuilder sb=new StringBuilder();
 		for(int i=0;i<5000;i++){
 			for(int j=0;j<12;j++){

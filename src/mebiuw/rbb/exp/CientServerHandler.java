@@ -26,7 +26,7 @@ public class CientServerHandler extends SimpleChannelInboundHandler<String> {
 			
 			String[] msgs = msg.split("~");
 			for (int i = 1; i < msgs.length; i++)
-				this.suber.sendBack(Long.parseLong(msgs[i]));
+				this.suber.sendBack(msgs[i]);
 			
 			
 		}

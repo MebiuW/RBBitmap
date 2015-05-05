@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.mebiuw.btree.BplusTree;
 
+import mebiuw.rbb.exp.DataNodeQuener;
 import mebiuw.rbb.exp.Logger;
 import mebiuw.rbb.fundation.network.netty.NettyClient;
 import mebiuw.rbb.fundation.protocol.AddressItem;
@@ -36,11 +37,12 @@ public class ChordProtocol implements IProtocol,IRouter{
 	 * B-Tree
 	 */
 	private BplusTree btree;
-	private String position,bposition,rposition;
+	private String position,bposition,rposition,dbpositon;
 	private int networkSize,routeTableSize,netid,blevel;
 	private int dimension;
 	private AddressItem myAddressItem,supervisor;
 	private List<AddressItem> routeTable;
+	private DataNodeQuener dnq;
 	
 	public ChordProtocol(String configurationPosition) throws Exception{
 		/**
@@ -51,6 +53,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		FileStorage file=new FileStorage(this.position);
 		/**
 		 * 参数按行
+		 * 字典位置
 		 * 网络节点数量
 		 * 该路由表的数量
 		 * 当前节点ID
@@ -66,6 +69,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		Logger.Log("开始装载配置文件");
 		List<String> params = file.readAllLines();
 		int index=0;
+		this.dbpositon=params.get(index++);
 		this.networkSize=Integer.parseInt(params.get(index++));
 		this.routeTableSize=Integer.parseInt(params.get(index++));
 		this.netid=Integer.parseInt(params.get(index++));
@@ -85,14 +89,14 @@ public class ChordProtocol implements IProtocol,IRouter{
 			 */
 			
 			List<NettyClient> currentNettyClient=new ArrayList<NettyClient>();
-			if(nodeChordId!=this.netid)
+			
 			for(int j=0;j<item.getPorts().size();j++){
 				NettyClient client =new NettyClient(tmpIp,item.getPorts().get(j));
 				currentNettyClient.add(client);
+				if(nodeChordId==this.netid)
+					this.myAddressItem=item;
 			}
-			else{
-				this.myAddressItem=item;
-			}
+		
 			this.nettyClientList.add(currentNettyClient);
 		}
 		
@@ -135,6 +139,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		Logger.Log("初始化监听模块 本机ip："+this.myAddressItem.getIp());
 		ProtocolServer ps=new ProtocolServer(this.myAddressItem,this);
 		ps.startListening();
+		this.dnq=new DataNodeQuener(this.dbpositon,this.nettyClientList,this.networkSize);
 		
 		
 	}
@@ -189,10 +194,12 @@ public class ChordProtocol implements IProtocol,IRouter{
 	// 返回通知消息
 	@Override
 	public void callbackSupervisor(IMessage msg) {
+		this.dnq.triger(1);
 		List<NettyClient> senders = this.supervisorServer;
 		int nextPort=msg.getMessageId().hashCode()%senders.size();
 		//只需要返回id就可以了
-		senders.get(nextPort).sendMsg(msg.getMessageId());
+		senders.get(nextPort).sendMsg(msg.getMessageId()+"T"+this.netid);
+
 		
 	}
 

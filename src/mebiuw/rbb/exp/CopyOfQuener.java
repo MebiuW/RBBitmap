@@ -21,26 +21,22 @@ import mebiuw.rbb.fundation.storage.FileStorage;
  * @author MebiuW
  *
  */
-public class Quener {
+public class CopyOfQuener {
 	 private  ReadWriteLock lock = new ReentrantReadWriteLock();
 	 private int count=0,empty=0;
 	private  HashMap<Long,Long> startTimeCounter=new HashMap<Long,Long>();
-	private  HashMap<String,Long> endTimeCounter=new HashMap<String,Long>();
+	private  HashMap<Long,Long> endTimeCounter=new HashMap<Long,Long>();
 	public void newMsg(long msgId){
 		this.startTimeCounter.put(msgId, System.currentTimeMillis());
 		//Logger.Log("send"+System.currentTimeMillis());
 	}
-	public synchronized void sendBack(String msgId){
+	public synchronized void sendBack(long msgId){
 		//Logger.Log("back"+System.currentTimeMillis());
-		System.out.println(msgId);
-		long nmsgId=System.currentTimeMillis();
-
-
-				this.endTimeCounter.put(msgId,nmsgId);
-	
-		
+		this.endTimeCounter.put(msgId, System.currentTimeMillis());
+		count++;
+		empty++;
 	}
-	public void computerss(){
+	public void computer(){
 		long time=0,count=0;
 		Iterator<Long> it = this.startTimeCounter.keySet().iterator();
 		while(it.hasNext()){
@@ -84,20 +80,56 @@ public class Quener {
 		}
 	}
 	public void mains() throws Exception{
-
-
+		FileStorage db=new FileStorage("/Users/MebiuW/Documents/TMP/RBB/db.txt");
+		List<String> all = db.readAllLines();
+		Queue<String> str=new LinkedList<String>();
+		Queue<Long> msgids=new LinkedList<Long>();
+		for(int i=0;i<20000;i++){
+			long chordid=Long.parseLong(all.get(i).substring(0,all.get(i).indexOf(",")))%2;
+			ChordMessage icm=new ChordMessage(all.get(i),"lc","INSERT",""+i,chordid);
+			ChordMessage cm=new ChordMessage(icm.getMessageText(),"lc","LOCATE",""+i,chordid);
+			str.add(cm.getMessageText());
+			msgids.add(Long.parseLong(cm.getMessageId()));
+			//System.out.println(cm.getMessageText());
+		}
+		List<NettyClient> netlist=new ArrayList<NettyClient>();
+		for(int i=0;i<3;i++){
+		//	netlist.add(new NettyClient("127.0.0.1",10001+i));
+			netlist.add(new NettyClient("192.168.31.160",10001+i));
+			netlist.add(new NettyClient("192.168.31.161",10001+i));
+		}
+		Thread t0=null;
+	
 		
 		System.out.println("Go");
 		Random ran=new Random(System.currentTimeMillis());
-		AddressItem item=new AddressItem("127.0.0.1","11001 11002 11003 11004 11005",-1);
-		CountProtocolServer ps=new CountProtocolServer(item,this);
+
+		AddressItem item=new AddressItem("127.0.0.1","20005 20006 20001 20002 20003 20004 20007",-1);
+		CountProtocolServer ps=new CountProtocolServer(item,null);
 		ps.startListening();
 		Thread.sleep(31000);
 		int step=100;
-
+		for(int i=0;i<step*netlist.size()+10;i++){
+			this.newMsg(msgids.poll());
+			netlist.get(ran.nextInt(netlist.size())).sendMsg(str.poll());
+		}
 		Scanner it=new Scanner(System.in);
 		
-	
+		while(count<15000){
+			if(empty<0)
+				Thread.yield();
+			if(empty>=0){
+			//	this.lock.writeLock().lock();
+				empty-=step;
+				//this.lock.writeLock().unlock();
+				for(int i=0;i<step;i++){
+					this.newMsg(msgids.poll());
+					netlist.get(ran.nextInt(netlist.size())).sendMsg(str.poll());
+				}
+				
+			}
+			
+		}
 		//this.computers();
 		System.out.println("OO");
 		while(it.hasNext()){
@@ -110,7 +142,7 @@ public class Quener {
 	}
 	
 	public static void main(String isfr[]) throws Exception{
-		Quener quener=new Quener();
+		CopyOfQuener quener=new CopyOfQuener();
 		quener.mains();
 	}
 

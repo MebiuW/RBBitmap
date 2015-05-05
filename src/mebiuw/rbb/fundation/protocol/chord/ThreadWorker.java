@@ -43,12 +43,7 @@ public class ThreadWorker implements Runnable {
 	 */
 
 	private void processFunctionMessage() {
-		try {
-			Thread.sleep(10);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		if (nextMessage.getMessageType().equals("INSERT")) {
 			this.processInsertFunction(nextMessage);
 			Logger.Count();
