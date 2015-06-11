@@ -26,6 +26,7 @@ public class NettyClient implements Runnable {
 	public  String host;
 	public  int port ;
 	StringBuilder tmp=null;
+	Channel ch=null;
 	/**
 	 * 初始化一个客户端 发送请求的，一旦受到后，这个请求就开始监听了
 	 * @param ip IP地址
@@ -35,8 +36,28 @@ public class NettyClient implements Runnable {
 		Logger.Log("准备打开通往"+ip+":"+port+"的Netty通道 即将休眠30S后打开");
 		this.host=ip;
 		this.port=port;
-		Thread t=new Thread(this);
-		t.start();
+		/**
+		 * 打开端口
+		 */
+		EventLoopGroup group = new NioEventLoopGroup();
+		try {
+		
+			Bootstrap b = new Bootstrap();
+			b.group(group)
+			.channel(NioSocketChannel.class)
+			.handler(new NettyClientInitializer());
+
+			// 连接服务端
+			 ch = b.connect(host, port).sync().channel();
+
+			Logger.Log("已经打开"+host+":"+port+"的Netty通道");
+			
+		} 
+		catch(Exception e){
+			Logger.Log(""+host+":"+port+"的Netty通道异常"+e+"//");
+			e.printStackTrace();
+		}
+		
 	}
 
 	/**
@@ -46,35 +67,8 @@ public class NettyClient implements Runnable {
 	 * 
 	 */
 	public  void run (String[] args) throws InterruptedException, IOException {
-		EventLoopGroup group = new NioEventLoopGroup();
-		Thread.sleep(30000);
-		try {
-			Bootstrap b = new Bootstrap();
-			b.group(group)
-			.channel(NioSocketChannel.class)
-			.handler(new NettyClientInitializer());
-
-			// 连接服务端
-			Channel ch = b.connect(host, port).sync().channel();
-
-			Logger.Log("已经打开"+host+":"+port+"的Netty通道");
-			for (;;) {
-				synchronized(this){
-				if(tmp!=null )
-				ch.writeAndFlush(tmp.toString()+ "\r\n");
-				tmp=null;
-			
-				}
-			}
-		} 
-		catch(Exception e){
-			Logger.Log(""+host+":"+port+"的Netty通道异常"+e+"//");
-			e.printStackTrace();
-		}
-		finally {
-			// The connection is closed automatically on shutdown.
-			group.shutdownGracefully();
-		}
+	
+		
 	}
 	
 
@@ -83,14 +77,9 @@ public class NettyClient implements Runnable {
  * @param msg
  */
 	public void sendMsg(String msg){
-		synchronized(this){
-		if(this.tmp==null){
-			this.tmp=new StringBuilder("0~"+msg);
-		}
-		else{
-			this.tmp.append("~"+msg);
-		}
-		}
+		
+		ch.writeAndFlush(msg+ "\r\n");
+	
 		
 	}
 

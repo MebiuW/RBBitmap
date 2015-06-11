@@ -1,9 +1,13 @@
 package com.mebiuw.btree;
 
+import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;  
 import java.util.ArrayList;  
+import java.util.Iterator;
 import java.util.List;  
 import java.util.Map.Entry;  
+
+import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleListRowkey;
   
 public class Node {  
       
@@ -27,6 +31,22 @@ public class Node {
       
     /** 子节点 */  
     protected List<Node> children;  
+    
+    protected boolean save() throws IOException{
+    	if (isLeaf) {  
+            for (Entry<Comparable, Object> entry : entries) {  
+            	SimpleListRowkey t = (SimpleListRowkey)entry.getValue();
+            	t.save();
+            }
+    	}
+    	else{
+    		Iterator<Node> it = this.children.iterator();
+    		while(it.hasNext()){
+    			it.next().save();
+    		}
+    	}
+    	return true;
+    }
       
     public Node(boolean isLeaf) {  
         this.isLeaf = isLeaf;  
@@ -43,11 +63,16 @@ public class Node {
     }  
       
     public Object get(Comparable key) {  
-          
+          try {
+	
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         //如果是叶子节点  
         if (isLeaf) {  
             for (Entry<Comparable, Object> entry : entries) {  
-            	System.out.println(entry+"  k: "+key);
+           	
                 if (entry!=null && entry.getKey().compareTo(key) == 0) {  
                     //返回找到的对象  
                     return entry.getValue();  

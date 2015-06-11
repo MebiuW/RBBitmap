@@ -6,6 +6,9 @@ import java.util.Random;
 import mebiuw.rbb.fundation.bitstring.IConfiguration;
 import mebiuw.rbb.fundation.rowkey.IDataItemable;
 import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleDataItem;
+import mebiuw.rbb.fundation.sql.Condition;
+import mebiuw.rbb.fundation.sql.ConditionItem;
+import mebiuw.rbb.fundation.sql.ConditionType;
 import mebiuw.rbb.fundation.storage.FileStorage;
 /**
  * 这个需要读取文件，分区方式以当前的0到最大值为全部数据域，以Phase为阶段进行判断
@@ -95,6 +98,19 @@ public class SimpleConfiguration implements IConfiguration{
 	
 		IDataItemable item=new SimpleDataItem(result,sbs.computeRegionId(result));
 		return item;
+	}
+
+	
+	@Override
+	public Condition getRandomRange(int subrange) {
+		ConditionItem[] item=new ConditionItem[this.attrinum];
+		Random ran=new Random(System.currentTimeMillis());
+		for(int i=0;i<this.attrinum;i++){
+			int index=this.getAttributeIndex(i, subrange);
+			//创建条件
+			item[i]=new ConditionItem(ConditionType.LESSOREQUAL, this.phaseOfEachAttribute[i]*index+ran.nextDouble()*this.phaseOfEachAttribute[i]);
+		}
+		return new Condition(item);
 	}
 
 }

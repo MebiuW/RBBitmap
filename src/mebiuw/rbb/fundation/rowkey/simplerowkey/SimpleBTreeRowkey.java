@@ -5,17 +5,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.mebiuw.btree.LinkedBplusTree;
-
 import mebiuw.rbb.fundation.rowkey.IDataItemable;
 import mebiuw.rbb.fundation.rowkey.IRowkeyable;
 import mebiuw.rbb.fundation.sql.Condition;
 import mebiuw.rbb.fundation.storage.FileStorage;
 
-public class SimpleListRowkey implements IRowkeyable {
+public class SimpleBTreeRowkey implements IRowkeyable {
 	private FileStorage file;
 	private List<IDataItemable> datas;
-	private LinkedBplusTree btree;
 	private int numberOfParameters;
 	private String filePosition;
 	
@@ -25,12 +22,11 @@ public class SimpleListRowkey implements IRowkeyable {
 	 * @param dimension
 	 * @param filePosition
 	 */
-	public SimpleListRowkey(int dimension,String filePosition){
+	public SimpleBTreeRowkey(int dimension,String filePosition){
 		this.datas=new ArrayList<IDataItemable>();
 		this.filePosition=filePosition;
 		this.numberOfParameters=dimension;
 		this.file = new FileStorage(filePosition);
-		this.btree=new LinkedBplusTree(4);
 		
 		
 	}
@@ -39,10 +35,9 @@ public class SimpleListRowkey implements IRowkeyable {
 	 * @param filePosition
 	 * @throws UnexceptedFormart
 	 */
-	public SimpleListRowkey(String filePosition) throws UnexceptedFormart {
+	public SimpleBTreeRowkey(String filePosition) throws UnexceptedFormart {
 		this.file = new FileStorage(filePosition);
 		this.datas = new ArrayList<IDataItemable>();
-		this.btree=new LinkedBplusTree(4);
 		this.filePosition=filePosition;
 		int numberOfLines;
 		// 装载文件
@@ -55,18 +50,14 @@ public class SimpleListRowkey implements IRowkeyable {
 			}
 			catch(Exception e){
 				//视为没创建过的文件 所以这样做
-				e.printStackTrace();
 				numberOfParameters=0;
 				numberOfLines=0;
 			}
-			for (int i = 0; i < numberOfLines*1; i++) {
+			for (int i = 0; i < numberOfLines; i++) {
 				String nextline = it.next();
 				SimpleDataItem item = new SimpleDataItem(nextline);
 				this.datas.add(item);
-				this.btree.insertOrUpdate(item.getFirstKey(), item);
 			}
-			System.out.println("装载完成");
-			this.file.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new UnexceptedFormart();
@@ -75,10 +66,10 @@ public class SimpleListRowkey implements IRowkeyable {
 	}
 
 	@Override
-	public boolean insertOrUpdate(long id, IDataItemable value ) {
+	public boolean insertOrUpdate(long id, IDataItemable value) {
 		// TODO Auto-generated method stub
 		this.datas.add(value);
-		this.btree.insertOrUpdate(value.getFirstKey(), (SimpleDataItem) value);
+		
 		if(this.numberOfParameters<value.getData().length)
 			this.numberOfParameters=value.getData().length;
 		return false;
@@ -88,7 +79,6 @@ public class SimpleListRowkey implements IRowkeyable {
 	public boolean insertOrUpdate(IDataItemable value) {
 		// TODO Auto-generated method stub
 		this.datas.add(value);
-		this.btree.insertOrUpdate(value.getFirstKey(), (SimpleDataItem) value);
 		Iterator<IDataItemable> it = this.datas.iterator();
 		while(it.hasNext()){
 	
@@ -112,29 +102,13 @@ public class SimpleListRowkey implements IRowkeyable {
 	@Override
 	public IDataItemable query(Condition con) {
 		// TODO Auto-generated method stub
-		this.btree.sleep();
-		Iterator<SimpleDataItem> it = this.btree.getLinkedList(con.conditions[0].getValuea()).iterator();
+		Iterator<IDataItemable> it = this.datas.iterator();
 		// 1 Tuple Result
-		   try {
 		while (it.hasNext()) {
-			
-				//	Thread.sleep(1);
-				
 			IDataItemable item = it.next();
 			if (item.isSatisfy(con,con.getConditions().length))
-			{
-				System.out.println("Get it");
 				return item;
-			}
-			else{
-				// System.out.println(con.toString()+"  "+item.toStringLine());
-			}
 		}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		   System.out.println("Get Faild");
 		return null;
 	}
 
@@ -177,29 +151,7 @@ public class SimpleListRowkey implements IRowkeyable {
 	}
 	@Override
 	public void queryAll(Condition con) {
-		this.btree.sleep();
-		List<IDataItemable> tmp = datas;
-		if(tmp!=null){
-			
-			Iterator<IDataItemable> it = tmp.iterator();
-		   try {
-			   int count=0;
-		while (it.hasNext()) {
-			count++;
-
-			IDataItemable item = it.next();
-		
-			item.isSatisfy(con,con.getConditions().length);
-		
-
-		}
-		System.out.println(count);
-		Thread.sleep(2*count);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		}
+		// TODO Auto-generated method stub
 		
 	}
 

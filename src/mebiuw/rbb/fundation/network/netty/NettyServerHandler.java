@@ -25,15 +25,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
 		// System.out.println(System.currentTimeMillis()+"  "+ctx.channel().remoteAddress()
 		// + " Say : " + msg);
 
-		Logger.Log(msg);
-		if (msg.charAt(0) != 'h') {
-			
-			String[] msgs = msg.split("~");
-			for (int i = 1; i < msgs.length; i++)
-				this.suber.processMessage(new ChordMessage(msgs[i]));
-			
-			
-		}
+				this.suber.processMessage(new ChordMessage(msg));
+
 
 		// 返回客户端消息 - 我已经接收到了你的消息
 		// ctx.writeAndFlush("Received your message !\n");

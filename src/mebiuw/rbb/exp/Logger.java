@@ -6,7 +6,7 @@ import java.util.Iterator;
 public class Logger {
 	static HashMap<Long,Long> map=new HashMap<Long,Long>();
 	public static void Log(String str){
-		//System.out.println(str);
+		System.out.println(str);
 	}
 	public static void Count(){
 		long time=System.currentTimeMillis()%1000;

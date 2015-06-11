@@ -1,9 +1,12 @@
 package mebiuw.rbb.fundation.bitstring.simple;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import mebiuw.rbb.fundation.bitstring.IBitString;
 import mebiuw.rbb.fundation.bitstring.IConfiguration;
+import mebiuw.rbb.fundation.sql.Condition;
 
 /**
  * 最基本的适应于double属性的BitString
@@ -96,6 +99,42 @@ public  class SimpleBitString implements IBitString {
 	@Override
 	public String toDecRegionIdString() {
 		return Long.toString(this.regionId);
+	}
+	/**
+	 * 根据条件 获得所有Regions
+	 * con不完全包含的Region使用负数表示，完全包含的使用正的表示
+	 */
+	@Override
+	public List<Long> getRegions(Condition con) {
+		List<Long> result=new ArrayList<Long>();
+		result.add((long)0);
+		for(int i=0;i<con.getConditions().length;i++){
+			List<Long> newresult=new ArrayList<Long>();
+			int index=this.config.getAttributeIndex(i, con.getConditions()[i].getValuea());
+			for(int j=0;j<index;j++){
+				Iterator<Long> it = result.iterator();
+				while(it.hasNext()){
+					Long tmp = it.next();
+					tmp=tmp<<this.config.getBitLengthOfAttribute(i);
+					if(tmp>=0)
+					tmp+=j;
+					else tmp-=j;
+					newresult.add(tmp);
+					
+				}
+			}
+			//之前的
+			Iterator<Long> it = result.iterator();
+			while(it.hasNext()){
+				Long tmp = Math.abs(it.next());
+				tmp=tmp<<this.config.getBitLengthOfAttribute(i);
+				tmp+=index;
+				newresult.add(Math.abs(tmp)*-1);
+				
+			}
+			result=newresult;
+		}
+		return result;
 	}
 
 }

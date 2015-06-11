@@ -25,22 +25,22 @@ public class Quener {
 	 private  ReadWriteLock lock = new ReentrantReadWriteLock();
 	 private int count=0,empty=0;
 	private  HashMap<Long,Long> startTimeCounter=new HashMap<Long,Long>();
-	private  HashMap<String,Long> endTimeCounter=new HashMap<String,Long>();
+	private  List<Long> endTimeCounter=new ArrayList<Long>();
 	public void newMsg(long msgId){
 		this.startTimeCounter.put(msgId, System.currentTimeMillis());
 		//Logger.Log("send"+System.currentTimeMillis());
 	}
-	public synchronized void sendBack(String msgId){
-		//Logger.Log("back"+System.currentTimeMillis());
-		System.out.println(msgId);
-		long nmsgId=System.currentTimeMillis();
+	public  synchronized void sendBack(String msgId){
+
+		long nmsgId=System.currentTimeMillis()/1000;
+		this.endTimeCounter.add(nmsgId);
 
 
-				this.endTimeCounter.put(msgId,nmsgId);
 	
 		
 	}
 	public void computerss(){
+		/*
 		long time=0,count=0;
 		Iterator<Long> it = this.startTimeCounter.keySet().iterator();
 		while(it.hasNext()){
@@ -55,33 +55,35 @@ public class Quener {
 			System.out.println("no sendback");
 		else
 			System.out.println(time+"  /  "+count+"  Speed"+(time/(0.0+count)));
+			*/
 	}
 	
 	public void computers(){
-		long time=0,count=0;
+		long time=0,count=0,all=0;
 		HashMap<Long,Long> counters=new HashMap<Long,Long>();
-		Iterator<Long> it = this.endTimeCounter.values().iterator();
+		Iterator<Long> it =this.endTimeCounter.iterator();
 		while(it.hasNext()){
-			long vv=it.next();
-			long msgid=vv/1000;
-			count++;
-			if(counters.containsKey(msgid))
-				counters.put(msgid, counters.get(msgid)+1);
-			else 
-				counters.put(msgid, (long) 1);
-			
+			time=it.next();
+			if(counters.containsKey(time)){
+				counters.put(time,counters.get(time)+1);
+			}
+			else{
+				counters.put(time,(long)1);
+			}
 		}
-		
-		if(count==0)
-			System.out.println("no sendback");
-		else{
+		it = counters.keySet().iterator();
+
 			it=counters.keySet().iterator();
 			while(it.hasNext()){
 				long key=it.next();
+				all+=counters.get(key);
+				count++;
 				System.out.println(key+"   "+counters.get(key));
+		
 			}
-			//System.out.println(time+"  /  "+count+"  Speed"+(time/(0.0+count)));
-		}
+
+		
+		System.out.println("count  "+all+"   "+(all/(count+0.0)));
 	}
 	public void mains() throws Exception{
 
@@ -92,7 +94,6 @@ public class Quener {
 		AddressItem item=new AddressItem("127.0.0.1","11001 11002 11003 11004 11005",-1);
 		CountProtocolServer ps=new CountProtocolServer(item,this);
 		ps.startListening();
-		Thread.sleep(31000);
 		int step=100;
 
 		Scanner it=new Scanner(System.in);

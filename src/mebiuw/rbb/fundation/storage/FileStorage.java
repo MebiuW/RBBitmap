@@ -61,6 +61,7 @@ public class FileStorage {
 		String data;
 		while ((data = br.readLine()) != null)
 			tmps.add(data);
+		br.close();
 		return tmps;
 	}
 
@@ -98,7 +99,7 @@ public class FileStorage {
 	 * 关闭写回文件必须的
 	 */
 	public void close() {
-
+		
 	}
 
 }

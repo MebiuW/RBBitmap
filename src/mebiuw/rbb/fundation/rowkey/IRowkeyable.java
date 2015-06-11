@@ -33,6 +33,7 @@ public interface IRowkeyable {
 	public IRowkeyable init(String fileposition);
 	public boolean save() throws IOException;
 	public boolean release();
+	public void queryAll(Condition con);
 	
 	
 

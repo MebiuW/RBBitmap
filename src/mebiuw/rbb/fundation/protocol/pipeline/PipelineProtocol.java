@@ -1,6 +1,5 @@
-package mebiuw.rbb.fundation.protocol.chord;
+package mebiuw.rbb.fundation.protocol.pipeline;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -20,10 +19,12 @@ import mebiuw.rbb.fundation.protocol.IMessage;
 import mebiuw.rbb.fundation.protocol.IProtocol;
 import mebiuw.rbb.fundation.protocol.IRouter;
 import mebiuw.rbb.fundation.protocol.ProtocolServer;
+import mebiuw.rbb.fundation.protocol.chord.ChordMessage;
+import mebiuw.rbb.fundation.protocol.chord.ThreadWorker;
 import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleListRowkey;
 import mebiuw.rbb.fundation.storage.FileStorage;
 
-public class ChordProtocol implements IProtocol,IRouter{
+public class PipelineProtocol implements IProtocol,IRouter{
 	/**
 	 * Chord ID ：路由信息
 	 */
@@ -52,9 +53,9 @@ public class ChordProtocol implements IProtocol,IRouter{
 	/**
 	 * 线程池
 	 */
-	ExecutorService fixedThreadPool = Executors.newFixedThreadPool(32);
+	ExecutorService fixedThreadPool = Executors.newFixedThreadPool(8);
 	
-	public ChordProtocol(String configurationPosition) throws Exception{
+	public PipelineProtocol(String configurationPosition) throws Exception{
 		/**
 		 * 读取配置文件
 		 */
@@ -88,8 +89,6 @@ public class ChordProtocol implements IProtocol,IRouter{
 		this.routeTable=new ArrayList<AddressItem>();
 		this.chordIDofRouters=new ArrayList<Long>();
 		String tmpIp,tmpPorts;
-		Logger.Log("30S后开始装载端口");
-		//Thread.sleep(30000);
 		for(int i=0;i<this.routeTableSize;i++){
 			long nodeChordId=Long.parseLong(params.get(index++));
 			this.chordIDofRouters.add(nodeChordId);
@@ -97,21 +96,6 @@ public class ChordProtocol implements IProtocol,IRouter{
 			tmpPorts=params.get(index++);
 			AddressItem item = new AddressItem(tmpIp,tmpPorts,netid);
 			this.routeTable.add(item);
-			if(nodeChordId==this.netid)
-				this.myAddressItem=item;
-		}
-		/**
-		 * 初始化Netty模块 并开始监听
-		 */
-		Logger.Log("初始化监听模块 本机ip："+this.myAddressItem.getIp());
-		ProtocolServer ps=new ProtocolServer(this.myAddressItem,this);
-		ps.startListening();
-		Thread.sleep(3000);
-		/**
-		 * 打开通讯端口
-		 */
-		for(int i=0;i<this.routeTableSize;i++){
-			AddressItem item = this.routeTable.get(i);
 			/**
 			 * 并且初始化Netty,因为使用的时ArrayList所以就算id是自己也要加入一个空的进去
 			 * 这样就能实现随机访问了
@@ -120,8 +104,10 @@ public class ChordProtocol implements IProtocol,IRouter{
 			List<NettyClient> currentNettyClient=new ArrayList<NettyClient>();
 			
 			for(int j=0;j<item.getPorts().size();j++){
-				NettyClient client =new NettyClient(item.getIp(),item.getPorts().get(j));
+				NettyClient client =new NettyClient(tmpIp,item.getPorts().get(j));
 				currentNettyClient.add(client);
+				if(nodeChordId==this.netid)
+					this.myAddressItem=item;
 			}
 		
 			this.nettyClientList.add(currentNettyClient);
@@ -157,12 +143,15 @@ public class ChordProtocol implements IProtocol,IRouter{
 		int rowid;
 		for(int i=0;i<rowkeys;i++){
 			rowid=Integer.parseInt(bparams.get(bindex++));
-			SimpleListRowkey slr=new SimpleListRowkey(this.rposition+"\\"+rowid+".txt");
-			System.out.println(rowid+"读取 并装载完成");
+			SimpleListRowkey slr=new SimpleListRowkey(this.rposition+rowid+".txt");
 			this.btree.insertOrUpdate(rowid,slr);
 		}
-		
-	Thread.sleep(1000);
+		/**
+		 * 初始化Netty模块 并开始监听
+		 */
+		Logger.Log("初始化监听模块 本机ip："+this.myAddressItem.getIp());
+		ProtocolServer ps=new ProtocolServer(this.myAddressItem,this);
+		ps.startListening();
 		this.dnq=new DataNodeQuener(this.dbpositon,this.nettyClientList,this.networkSize);
 		
 		
@@ -196,7 +185,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 				this.sendToDestination(nextHop,(ChordMessage) msg);
 			}
 		}
-		else if(!msg.getMessageType().equals("SAVE")){
+		else{
 			/**
 			 * 启动一个新线程去执行
 			 */
@@ -206,15 +195,6 @@ public class ChordProtocol implements IProtocol,IRouter{
 			ThreadWorker th=new ThreadWorker(this.btree,chordMsg,this,this.rposition,this.dimension);
 			Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
 			this.fixedThreadPool.execute(thread);
-		}
-		else{
-			//执行保存操作
-			try {
-				this.btree.saveRegions(bposition, rposition, dimension);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		
 	}
@@ -236,17 +216,17 @@ public class ChordProtocol implements IProtocol,IRouter{
 	@Override
 	public void callbackSupervisor(IMessage msg) {
 	
-		synchronized(timeCounter){
-		this.dnq.triger(this.networkSize*2);
+		synchronized(this){
+		this.dnq.triger(5*this.networkSize);
 		List<NettyClient> senders = this.supervisorServer;
 		int nextPort=msg.getMessageId().hashCode()%senders.size();
 		//只需要返回id就可以了
-		
+		synchronized(timeCounter){
 			this.timeCounter.add(System.currentTimeMillis());
 		
 		senders.get(nextPort).sendMsg((System.currentTimeMillis()-this.timeCounter.poll())+"");
 		}
-		
+		}
 
 		
 	}

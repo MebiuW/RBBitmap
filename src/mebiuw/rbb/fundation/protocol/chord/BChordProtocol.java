@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.mebiuw.btree.BplusTree;
+import com.mebiuw.btree.LinkedBplusTree;
 
 import mebiuw.rbb.exp.DataNodeQuener;
 import mebiuw.rbb.exp.Logger;
@@ -20,10 +21,11 @@ import mebiuw.rbb.fundation.protocol.IMessage;
 import mebiuw.rbb.fundation.protocol.IProtocol;
 import mebiuw.rbb.fundation.protocol.IRouter;
 import mebiuw.rbb.fundation.protocol.ProtocolServer;
+import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleDataItem;
 import mebiuw.rbb.fundation.rowkey.simplerowkey.SimpleListRowkey;
 import mebiuw.rbb.fundation.storage.FileStorage;
 
-public class ChordProtocol implements IProtocol,IRouter{
+public class BChordProtocol implements IProtocol,IRouter{
 	/**
 	 * Chord ID ：路由信息
 	 */
@@ -42,7 +44,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 	/**
 	 * B-Tree
 	 */
-	private BplusTree btree;
+	private LinkedBplusTree btree;
 	private String position,bposition,rposition,dbpositon;
 	private int networkSize,routeTableSize,netid,blevel;
 	private int dimension;
@@ -54,7 +56,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 	 */
 	ExecutorService fixedThreadPool = Executors.newFixedThreadPool(32);
 	
-	public ChordProtocol(String configurationPosition) throws Exception{
+	public BChordProtocol(String configurationPosition) throws Exception{
 		/**
 		 * 读取配置文件
 		 */
@@ -106,7 +108,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 		Logger.Log("初始化监听模块 本机ip："+this.myAddressItem.getIp());
 		ProtocolServer ps=new ProtocolServer(this.myAddressItem,this);
 		ps.startListening();
-		Thread.sleep(3000);
+		Thread.sleep(300);
 		/**
 		 * 打开通讯端口
 		 */
@@ -135,7 +137,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 			
 		}
 		this.bposition=params.get(index++);
-		Logger.Log("完成装载配置文件 装载B+树");
+		
 		/**
 		 * 接下来将初始化B+数
 		 */
@@ -151,18 +153,22 @@ public class ChordProtocol implements IProtocol,IRouter{
 		int bindex=0;
 		this.blevel=Integer.parseInt(bparams.get(bindex++));
 		this.rposition=bparams.get(bindex++);
-		this.btree=new BplusTree(this.blevel);
+		this.btree=new LinkedBplusTree(this.blevel);
 		int rowkeys=Integer.parseInt(bparams.get(bindex++));
 		this.dimension=Integer.parseInt(bparams.get(bindex++));
 		int rowid;
 		for(int i=0;i<rowkeys;i++){
 			rowid=Integer.parseInt(bparams.get(bindex++));
-			SimpleListRowkey slr=new SimpleListRowkey(this.rposition+"\\"+rowid+".txt");
-			System.out.println(rowid+"读取 并装载完成");
-			this.btree.insertOrUpdate(rowid,slr);
+			FileStorage slr=new FileStorage(this.rposition+"\\"+rowid+".txt");
+			List<String> datas = slr.readAllLines();
+			for(int j=2;j<datas.size()*1;j++){
+				SimpleDataItem item=new SimpleDataItem(datas.get(j));
+				this.btree.insertOrUpdate(item.getFirstKey(),item);
+			}
+			
 		}
 		
-	Thread.sleep(1000);
+		Logger.Log("完成装载配置文件 完整装载B+树");
 		this.dnq=new DataNodeQuener(this.dbpositon,this.nettyClientList,this.networkSize);
 		
 		
@@ -187,7 +193,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 				synchronized(timeCounter){
 					this.timeCounter.add(System.currentTimeMillis());
 				}
-				ThreadWorker th=new ThreadWorker(this.btree,(ChordMessage)chordMsg.getNextMessage(),this,this.rposition,this.dimension);
+				BThreadWorker th=new BThreadWorker(this.btree,(ChordMessage)chordMsg.getNextMessage(),this,this.rposition,this.dimension);
 				Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
 				this.fixedThreadPool.execute(thread);
 			
@@ -203,7 +209,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 			synchronized(timeCounter){
 				this.timeCounter.add(System.currentTimeMillis());
 			}
-			ThreadWorker th=new ThreadWorker(this.btree,chordMsg,this,this.rposition,this.dimension);
+			BThreadWorker th=new BThreadWorker(this.btree,chordMsg,this,this.rposition,this.dimension);
 			Thread thread=new Thread(th,"b+process:"+chordMsg.getMessageId());
 			this.fixedThreadPool.execute(thread);
 		}
@@ -286,7 +292,7 @@ public class ChordProtocol implements IProtocol,IRouter{
 	
 	
 	public void initManagement(){
-		this.btree=new BplusTree(4);
+		this.btree=new LinkedBplusTree(4);
 	}
 
 

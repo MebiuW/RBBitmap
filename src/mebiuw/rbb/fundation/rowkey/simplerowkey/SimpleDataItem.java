@@ -5,8 +5,8 @@ import java.util.List;
 
 import mebiuw.rbb.fundation.rowkey.IDataItemable;
 import mebiuw.rbb.fundation.sql.Condition;
-import mebiuw.rbb.fundation.sql.Condition.ConditionItem;
-import mebiuw.rbb.fundation.sql.ConditionStates;
+import mebiuw.rbb.fundation.sql.ConditionItem;
+import mebiuw.rbb.fundation.sql.ConditionType;
 
 
 public class SimpleDataItem implements IDataItemable {
@@ -42,22 +42,28 @@ public class SimpleDataItem implements IDataItemable {
 	     this.storeRecords=inputLine;
 	}
 	@Override
-	public boolean isSatisfy(Condition con) {
+	public boolean isSatisfy(Condition con,int dimension) {
 		// TODO Auto-generated method stub
 		ConditionItem[] conditions = con.getConditions();
 		for(int i=0;i<conditions.length;i++){
-			if(conditions[i].getType()== ConditionStates.NULL)
+			try {
+				//Thread.sleep(0,dimension);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(conditions[i].getType()== ConditionType.NULL)
 				continue;
-			if(conditions[i].getType()== ConditionStates.EQUAL)
-				if(this.data[i]!=conditions[i].getValuea())
+			if(conditions[i].getType()== ConditionType.EQUAL)
+				if(this.data[i+1]!=conditions[i].getValuea())
 				   return false;
-			if(conditions[i].getType()== ConditionStates.BETWEEN)
-				if(this.data[i]<conditions[i].getValuea() || this.data[i]>conditions[i].getValueb())
+			if(conditions[i].getType()== ConditionType.BETWEEN)
+				if(this.data[i+1]<conditions[i].getValuea() || this.data[i+1]>conditions[i].getValueb())
 				   return false;
-			if(conditions[i].getType()== ConditionStates.LESSOREQUAL)
-				if(this.data[i]<conditions[i].getValuea() )
+			if(conditions[i].getType()== ConditionType.LESSOREQUAL)
+				if(this.data[i+1]>conditions[i].getValuea() )
 				   return false;
-			if(conditions[i].getType()== ConditionStates.MOREOREQUAL)
+			if(conditions[i].getType()== ConditionType.MOREOREQUAL)
 				if(this.data[i]>conditions[i].getValuea() )
 				   return false;
 		}
@@ -68,7 +74,7 @@ public class SimpleDataItem implements IDataItemable {
 	@Override
 	public double getFirstKey() {
 		// TODO Auto-generated method stub
-		return this.firstkey;
+		return this.data[1];
 	}
 	@Override
 	public String getStoreRecords() {
@@ -85,6 +91,14 @@ public class SimpleDataItem implements IDataItemable {
 	public long getRegionId() {
 		// TODO Auto-generated method stub
 		return this.regionid;
+	}
+
+	@Override
+	public String toStringLine() {
+		StringBuilder sb=new StringBuilder();
+		for(int i=0;i<this.data.length;i++)
+			sb.append(data[i]+",");
+		return sb.toString();
 	}
 
 

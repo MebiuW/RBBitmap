@@ -27,6 +27,7 @@ public abstract interface IDataItemable extends IConditionable {
 	public String getStoreRecords();
 	
     public double[] getData();
+    public String toStringLine();
 
 
 }

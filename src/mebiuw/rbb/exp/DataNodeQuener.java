@@ -11,6 +11,7 @@ import java.util.Scanner;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import mebiuw.rbb.fundation.bitstring.simple.RangeCreater;
 import mebiuw.rbb.fundation.network.netty.NettyClient;
 import mebiuw.rbb.fundation.protocol.AddressItem;
 import mebiuw.rbb.fundation.protocol.ProtocolServer;
@@ -52,22 +53,25 @@ public class DataNodeQuener {
 		 * 装载字典
 		 */
 		count=0;
-		FileStorage db=new FileStorage(dbposition);
+		FileStorage db=new FileStorage("/Users/MebiuW/Documents/TMP/RBB/rdb.txt");
 		 all = db.readAllLines();
 		 str=new LinkedList<String>();
 		 msgids=new LinkedList<Long>();
 		 for(int i=0;i<20000;i++){
-				long chordid=Long.parseLong(all.get(i).substring(0,all.get(i).indexOf(",")))%netsize;
-				ChordMessage icm=new ChordMessage(all.get(i),"lc","INSERT",""+i,chordid);
+				long chordid=0;//Long.parseLong(all.get(i).substring(0,all.get(i).indexOf(",")))%netsize;
+				String msg=all.get(i);
+				msg=msg.replace(",", "-EUQAL-");
+				ChordMessage icm=new ChordMessage(all.get(i),"lc","RANGE",""+i,chordid);
 				ChordMessage cm=new ChordMessage(icm.getMessageText(),"lc","LOCATE",""+i,chordid);
 				str.add(cm.getMessageText());
-				msgids.add(Long.parseLong(cm.getMessageId()));
+				msgids.add((long) i);
 				//System.out.println(cm.getMessageText());
 			}
 		 netlist=nettyClient;
 		 ran =new Random(System.currentTimeMillis());
 		 this.nextsize=netsize;
 		 //初始发送
+		 Thread.sleep(100);
 		 this.triger(50);
 	}
 

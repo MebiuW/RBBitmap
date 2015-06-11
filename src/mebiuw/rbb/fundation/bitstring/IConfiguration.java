@@ -1,6 +1,7 @@
 package mebiuw.rbb.fundation.bitstring;
 
 import mebiuw.rbb.fundation.rowkey.IDataItemable;
+import mebiuw.rbb.fundation.sql.Condition;
 
 /**
  * 如果需要配置一个参数，那么所需要实现的东西
@@ -38,6 +39,12 @@ public interface IConfiguration {
 	 * @return
 	 */
 	public IDataItemable getRandomDataItem();
+	/**
+	 * 随机获得一个封闭的等区间范围
+	 * @param subrange 每个属性设计到的范围
+	 * @return
+	 */
+	public Condition getRandomRange(int subrange);
 	
 	
 

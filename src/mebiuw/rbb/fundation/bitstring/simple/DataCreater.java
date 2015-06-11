@@ -10,7 +10,7 @@ import mebiuw.rbb.fundation.storage.FileStorage;
 public class DataCreater {
 	public static void main(String args[]) throws Exception {
 		SimpleConfiguration sc = new SimpleConfiguration(
-				"G:\\Datas\\RBB\\BT\\bitConfig.txt");
+				"/Users/MebiuW/Documents/TMP/RBB/bitConfig.txt");
 		System.out.println(sc.getRandomDataItem().getStoreRecords());
 		// 分别生成5000*12=30000个数据后以此保存
 		List<List<IDataItemable>> array = new ArrayList<List<IDataItemable>>();
@@ -26,7 +26,7 @@ public class DataCreater {
 			}
 			System.out.println("完成一个");
 		}
-		FileStorage db=new FileStorage("G:\\Datas\\RBB\\BT\\db3.txt");
+		FileStorage db=new FileStorage("/Users/MebiuW/Documents/TMP/RBB/db.txt");
 		StringBuilder sb=new StringBuilder();
 		for(int i=0;i<5000;i++){
 			for(int j=0;j<12;j++){
