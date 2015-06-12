@@ -57,10 +57,10 @@ public class DataNodeQuener {
 		 all = db.readAllLines();
 		 str=new LinkedList<String>();
 		 msgids=new LinkedList<Long>();
-		 for(int i=0;i<5000;i++){
+		 for(int i=0;i<20000;i++){
 				long chordid=0;//Long.parseLong(all.get(i).substring(0,all.get(i).indexOf(",")))%netsize;
 				String msg=all.get(i);
-				msg=msg.replace(",", "*<*");
+				msg=msg.replace(",", "-EUQAL-");
 				ChordMessage icm=new ChordMessage(all.get(i),"lc","RANGE",""+i,chordid);
 				ChordMessage cm=new ChordMessage(icm.getMessageText(),"lc","LOCATE",""+i,chordid);
 				str.add(cm.getMessageText());

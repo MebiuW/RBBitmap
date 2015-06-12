@@ -62,7 +62,6 @@ public class ThreadWorker implements Runnable {
 
 		} else if (nextMessage.getMessageType().equals("POINT")) {
 			try {
-				System.out.println(nextMessage.getMessageText());
 				this.processPointFunction(nextMessage);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -89,9 +88,9 @@ public class ThreadWorker implements Runnable {
 	 */
 	private void processPointFunction(ChordMessage message) {
 		String messageEntry = message.getMessageEntry();
-		String[] items = messageEntry.split(",");
+		String[] items = messageEntry.split("-");
 		long regionId = Long.parseLong(items[0]);
-		
+		int index = 1;
 		try {
 			Thread.sleep((long) (Math.log(((BplusTree) this.btree).hashIndex
 					.size()) / 2));
@@ -101,10 +100,7 @@ public class ThreadWorker implements Runnable {
 		}
 		// 接下来转化条件
 		ConditionItem[] cons = new ConditionItem[this.dimension];
-		int index = 1;
-		System.out.println(index);
 		for (int i = 0; i < this.dimension; i++) {
-			System.out.println(index);
 			if (items[index++].equals(ConditionType.EQUAL)) {
 				cons[i] = new ConditionItem(ConditionType.EQUAL,
 						Double.parseDouble(items[index++]));
